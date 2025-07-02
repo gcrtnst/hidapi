@@ -3,6 +3,7 @@ package hidapi
 // #include <hidapi/hidapi.h>
 import "C"
 import (
+	"math"
 	"strconv"
 	"sync"
 	"unicode/utf16"
@@ -34,6 +35,9 @@ func hidEnter() error {
 		if err != nil {
 			return err
 		}
+	}
+	if hidCount >= math.MaxInt {
+		panic("hidapi: hidCount >= math.MaxInt")
 	}
 	hidCount++
 	return nil
