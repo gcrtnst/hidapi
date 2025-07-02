@@ -25,7 +25,7 @@ func hidError(dev *Device) error {
 	}
 
 	cstr := C.hid_error(cdev)
-	gstr := wcharPtrToString(cstr)
+	gstr := convertWCharPtrToString(cstr)
 
 	text := gstr
 	if text == "hid_error is not implemented yet" {
@@ -35,9 +35,9 @@ func hidError(dev *Device) error {
 	return &Error{Text: text}
 }
 
-func wcharPtrToString(p *C.wchar_t) string {
+func convertWCharPtrToString(p *C.wchar_t) string {
 	if C.sizeof_wchar_t == unsafe.Sizeof(uint16(0)) { // UTF-16
-		l := wcharPtrToStringLen(p)
+		l := convertWCharPtrToStringLen(p)
 		u := (*uint16)(unsafe.Pointer(p))
 		s := unsafe.Slice(u, l)
 		d := utf16.Decode(s)
@@ -45,7 +45,7 @@ func wcharPtrToString(p *C.wchar_t) string {
 	}
 
 	if C.sizeof_wchar_t == unsafe.Sizeof(rune(0)) { // UTF-32
-		l := wcharPtrToStringLen(p)
+		l := convertWCharPtrToStringLen(p)
 		r := (*rune)(unsafe.Pointer(p))
 		s := unsafe.Slice(r, l)
 		return string(s)
@@ -54,7 +54,7 @@ func wcharPtrToString(p *C.wchar_t) string {
 	panic("unexpected size of wchar_t: " + strconv.Itoa(C.sizeof_wchar_t))
 }
 
-func wcharPtrToStringLen(p *C.wchar_t) int {
+func convertWCharPtrToStringLen(p *C.wchar_t) int {
 	l := 0
 	for {
 		var u unsafe.Pointer
