@@ -4,8 +4,10 @@ package hidapi
 import "C"
 import (
 	"math"
+	"runtime"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"unicode/utf16"
 	"unsafe"
 )
@@ -23,37 +25,50 @@ func (err *Error) Error() string {
 	return err.Text
 }
 
-func hidEnter() error {
+type hidRef struct {
+	OK atomic.Bool
+}
+
+func hidAcquire() (*hidRef, error) {
 	hidMutex.Lock()
 	defer hidMutex.Unlock()
 
 	if hidCount < 0 {
 		panic("hidapi: hidCount < 0")
-	}
-	if hidCount == 0 {
-		err := hidInit()
-		if err != nil {
-			return err
-		}
 	}
 	if hidCount >= math.MaxInt {
 		panic("hidapi: hidCount >= math.MaxInt")
 	}
+	if hidCount == 0 {
+		err := hidInit()
+		if err != nil {
+			return nil, err
+		}
+	}
 	hidCount++
-	return nil
+
+	ref := &hidRef{}
+	ref.OK.Store(true)
+	return ref, nil
 }
 
-func hidLeave() {
+func (ref *hidRef) Close() error {
+	if !ref.OK.Swap(false) {
+		return nil
+	}
+
 	hidMutex.Lock()
 	defer hidMutex.Unlock()
 
-	hidCount--
-	if hidCount < 0 {
-		panic("hidapi: hidCount < 0")
+	if hidCount <= 0 {
+		panic("hidapi: hidCount <= 0")
 	}
+	hidCount--
 	if hidCount == 0 {
 		_ = hidExit()
 	}
+
+	return nil
 }
 
 func hidInit() error {
