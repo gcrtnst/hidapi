@@ -25,10 +25,10 @@ func (err *Error) Error() string {
 }
 
 type hidRef struct {
-	OK atomic.Bool
+	ok uint32
 }
 
-func hidAcquire() (*hidRef, error) {
+func hidAcquire() (hidRef, error) {
 	if hidCount < 0 {
 		panic("hidapi: hidCount < 0")
 	}
@@ -38,18 +38,17 @@ func hidAcquire() (*hidRef, error) {
 	if hidCount == 0 {
 		err := hidInit()
 		if err != nil {
-			return nil, err
+			return hidRef{}, err
 		}
 	}
 	hidCount++
 
-	ref := &hidRef{}
-	ref.OK.Store(true)
+	ref := hidRef{ok: 1}
 	return ref, nil
 }
 
 func (ref *hidRef) Close() error {
-	if !ref.OK.Swap(false) {
+	if atomic.SwapUint32(&ref.ok, 0) == 0 {
 		return nil
 	}
 
