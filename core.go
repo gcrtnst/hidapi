@@ -29,9 +29,6 @@ type hidRef struct {
 }
 
 func hidAcquire() (*hidRef, error) {
-	hidMutex.Lock()
-	defer hidMutex.Unlock()
-
 	if hidCount < 0 {
 		panic("hidapi: hidCount < 0")
 	}
@@ -55,9 +52,6 @@ func (ref *hidRef) Close() error {
 	if !ref.OK.Swap(false) {
 		return nil
 	}
-
-	hidMutex.Lock()
-	defer hidMutex.Unlock()
 
 	if hidCount <= 0 {
 		panic("hidapi: hidCount <= 0")

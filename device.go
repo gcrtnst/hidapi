@@ -44,5 +44,7 @@ func (d *hidDevice) Close() error {
 		d.dev = nil
 	}
 
+	hidMutex.Lock()
+	defer hidMutex.Unlock()
 	return d.ref.Close()
 }
