@@ -1,16 +1,54 @@
 package hidapi
 
+// #include <stdlib.h>
 // #include <hidapi/hidapi.h>
 import "C"
 import (
 	"runtime"
 	"sync"
+	"unsafe"
 )
 
 type Device struct {
 	mu  sync.Mutex
 	cln runtime.Cleanup
 	in  *hidDevice
+}
+
+func OpenPath(path string) (*Device, error) {
+	hidMutex.Lock()
+	defer hidMutex.Unlock()
+
+	ref, err := hidAcquire()
+	if err != nil {
+		return nil, err
+	}
+	defer ref.Close() // ignore error
+
+	cstr := C.CString(path)
+	defer C.free(unsafe.Pointer(cstr))
+
+	cptr := C.hid_open_path(cstr)
+	if cptr == nil {
+		return nil, hidError(nil)
+	}
+
+	return newDevice(cptr)
+}
+
+func newDevice(cptr *C.hid_device) (*Device, error) {
+	dev := &Device{}
+	dev.in = &hidDevice{dev: cptr}
+
+	ref, err := hidAcquire()
+	if err != nil {
+		return nil, err
+	}
+	dev.in.ref = ref
+
+	cleanup := func(in *hidDevice) { go in.Close() } // ignore error
+	dev.cln = runtime.AddCleanup(dev, cleanup, dev.in)
+	return dev, nil
 }
 
 func (d *Device) Close() error {
