@@ -19,8 +19,8 @@ func (d *Device) Close() error {
 
 	if d.dev != nil {
 		C.hid_close(d.dev)
+		d.dev = nil
 	}
-	d.dev = nil
 
 	d.cln.Stop()
 	return nil
