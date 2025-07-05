@@ -10,7 +10,7 @@ import (
 type Device struct {
 	mu  sync.Mutex
 	cln runtime.Cleanup
-	dev *hidDevice
+	in  *hidDevice
 }
 
 func (d *Device) Close() error {
@@ -18,12 +18,19 @@ func (d *Device) Close() error {
 	defer d.mu.Unlock()
 
 	var err error
-	if d.dev != nil {
-		err = d.dev.Close()
+	if d.in != nil {
+		err = d.in.Close()
 	}
 
 	d.cln.Stop()
 	return err
+}
+
+func (d *Device) cptr() *C.hid_device {
+	if d.in == nil {
+		return nil
+	}
+	return d.in.dev
 }
 
 type hidDevice struct {

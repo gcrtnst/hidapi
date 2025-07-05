@@ -4,7 +4,6 @@ package hidapi
 import "C"
 import (
 	"math"
-	"runtime"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -89,7 +88,7 @@ func hidError(dev *Device) error {
 	if dev != nil {
 		dev.mu.Lock()
 		defer dev.mu.Unlock()
-		cdev = dev.dev
+		cdev = dev.cptr()
 	}
 
 	cstr := C.hid_error(cdev)
