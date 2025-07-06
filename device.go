@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+const MaxReportDescriptorSize = C.HID_API_MAX_REPORT_DESCRIPTOR_SIZE
+
 type Device struct {
 	mu  sync.Mutex
 	cln runtime.Cleanup

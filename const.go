@@ -8,6 +8,5 @@ const VersionMinor = C.HID_API_VERSION_MINOR
 const VersionPatch = C.HID_API_VERSION_PATCH
 const Version = C.HID_API_VERSION
 const VersionString = C.HID_API_VERSION_STR
-const MaxReportDescriptorSize = C.HID_API_MAX_REPORT_DESCRIPTOR_SIZE
 
 func MakeVersion(mj, mn, p int) int { return (((mj) << 24) | ((mn) << 8) | (p)) }
