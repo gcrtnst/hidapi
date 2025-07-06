@@ -42,16 +42,16 @@ func RuntimeVersionPatch() int {
 	return int(v.patch)
 }
 
-func RuntimeVersion() int {
+func RuntimeVersion() (int, int, int) {
 	v := C.hid_version()
 	if v == nil {
-		return 0
+		return 0, 0, 0
 	}
 
 	major := int(v.major)
 	minor := int(v.minor)
 	patch := int(v.patch)
-	return MakeVersion(major, minor, patch)
+	return major, minor, patch
 }
 
 func RuntimeVersionString() string {
