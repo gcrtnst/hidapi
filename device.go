@@ -28,17 +28,17 @@ func OpenPath(path string) (*Device, error) {
 	cstr := C.CString(path)
 	defer C.free(unsafe.Pointer(cstr))
 
-	cptr := C.hid_open_path(cstr)
-	if cptr == nil {
+	cdev := C.hid_open_path(cstr)
+	if cdev == nil {
 		return nil, hidError(nil)
 	}
 
-	return newDevice(cptr)
+	return newDevice(cdev)
 }
 
-func newDevice(cptr *C.hid_device) (*Device, error) {
+func newDevice(cdev *C.hid_device) (*Device, error) {
 	dev := &Device{}
-	dev.in = &hidDevice{dev: cptr}
+	dev.in = &hidDevice{dev: cdev}
 
 	cleanup := func(in *hidDevice) { go in.Close() } // ignore error
 	dev.cln = runtime.AddCleanup(dev, cleanup, dev.in)
