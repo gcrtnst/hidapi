@@ -15,6 +15,28 @@ type Device struct {
 	in  *hidDevice
 }
 
+func Open(vendorID uint16, productID uint16, serialNumber string) (*Device, error) {
+	hidMutex.Lock()
+	defer hidMutex.Unlock()
+
+	ref, err := hidAcquire()
+	if err != nil {
+		return nil, err
+	}
+	defer ref.Close()
+
+	cvid := C.ushort(vendorID)
+	cpid := C.ushort(productID)
+	cser := convertStringToWCharPtr(serialNumber)
+
+	cdev := C.hid_open(cvid, cpid, cser)
+	if cdev == nil {
+		return nil, hidError(nil)
+	}
+
+	return newDevice(cdev)
+}
+
 func OpenPath(path string) (*Device, error) {
 	hidMutex.Lock()
 	defer hidMutex.Unlock()

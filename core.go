@@ -4,11 +4,8 @@ package hidapi
 import "C"
 import (
 	"math"
-	"strconv"
 	"sync"
 	"sync/atomic"
-	"unicode/utf16"
-	"unsafe"
 )
 
 var (
@@ -93,40 +90,4 @@ func hidError(dev *Device) error {
 	}
 
 	return &Error{Text: text}
-}
-
-func convertWCharPtrToString(p *C.wchar_t) string {
-	if C.sizeof_wchar_t == unsafe.Sizeof(uint16(0)) { // UTF-16
-		l := convertWCharPtrToStringLen(p)
-		u := (*uint16)(unsafe.Pointer(p))
-		s := unsafe.Slice(u, l)
-		d := utf16.Decode(s)
-		return string(d)
-	}
-
-	if C.sizeof_wchar_t == unsafe.Sizeof(rune(0)) { // UTF-32
-		l := convertWCharPtrToStringLen(p)
-		r := (*rune)(unsafe.Pointer(p))
-		s := unsafe.Slice(r, l)
-		return string(s)
-	}
-
-	panic("unexpected size of wchar_t: " + strconv.Itoa(C.sizeof_wchar_t))
-}
-
-func convertWCharPtrToStringLen(p *C.wchar_t) int {
-	l := 0
-	for {
-		var u unsafe.Pointer
-		var c C.wchar_t
-		u = unsafe.Pointer(p)
-		u = unsafe.Pointer(uintptr(u) + uintptr(l*C.sizeof_wchar_t))
-		c = *(*C.wchar_t)(u)
-
-		if c == 0 {
-			break
-		}
-		l++
-	}
-	return l
 }
