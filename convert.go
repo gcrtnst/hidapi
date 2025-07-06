@@ -9,6 +9,10 @@ import (
 )
 
 func convertWCharPtrToString(p *C.wchar_t) string {
+	if p == nil {
+		return ""
+	}
+
 	if C.sizeof_wchar_t == unsafe.Sizeof(uint16(0)) { // UTF-16
 		l := convertWCharPtrToStringLen(p)
 		u := (*uint16)(unsafe.Pointer(p))
@@ -28,6 +32,10 @@ func convertWCharPtrToString(p *C.wchar_t) string {
 }
 
 func convertWCharPtrToStringLen(p *C.wchar_t) int {
+	if p == nil {
+		return 0
+	}
+
 	l := 0
 	for {
 		var u unsafe.Pointer
