@@ -40,14 +40,15 @@ func newDevice(cptr *C.hid_device) (*Device, error) {
 	dev := &Device{}
 	dev.in = &hidDevice{dev: cptr}
 
+	cleanup := func(in *hidDevice) { go in.Close() } // ignore error
+	dev.cln = runtime.AddCleanup(dev, cleanup, dev.in)
+
 	ref, err := hidAcquire()
 	if err != nil {
 		return nil, err
 	}
 	dev.in.ref = ref
 
-	cleanup := func(in *hidDevice) { go in.Close() } // ignore error
-	dev.cln = runtime.AddCleanup(dev, cleanup, dev.in)
 	return dev, nil
 }
 
