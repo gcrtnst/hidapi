@@ -26,6 +26,9 @@ type hidRef struct {
 }
 
 func hidAcquire() (hidRef, error) {
+	hidRefMu.Lock()
+	defer hidRefMu.Unlock()
+
 	if hidRefCnt < 0 {
 		panic("hidapi: hidCount < 0")
 	}
@@ -48,6 +51,9 @@ func (ref *hidRef) Close() error {
 	if atomic.SwapUint32(&ref.ok, 0) == 0 {
 		return nil
 	}
+
+	hidRefMu.Lock()
+	defer hidRefMu.Unlock()
 
 	if hidRefCnt <= 0 {
 		panic("hidapi: hidCount <= 0")

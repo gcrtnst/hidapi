@@ -18,9 +18,6 @@ type Device struct {
 }
 
 func Open(vendorID uint16, productID uint16, serialNumber string) (*Device, error) {
-	hidRefMu.Lock()
-	defer hidRefMu.Unlock()
-
 	ref, err := hidAcquire()
 	if err != nil {
 		return nil, err
@@ -40,9 +37,6 @@ func Open(vendorID uint16, productID uint16, serialNumber string) (*Device, erro
 }
 
 func OpenPath(path string) (*Device, error) {
-	hidRefMu.Lock()
-	defer hidRefMu.Unlock()
-
 	ref, err := hidAcquire()
 	if err != nil {
 		return nil, err
@@ -107,7 +101,5 @@ func (d *hidDevice) Close() error {
 		d.dev = nil
 	}
 
-	hidRefMu.Lock()
-	defer hidRefMu.Unlock()
 	return d.ref.Close()
 }
