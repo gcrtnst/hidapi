@@ -3,7 +3,6 @@ package hidapi
 // #include <hidapi/hidapi.h>
 import "C"
 import (
-	"errors"
 	"math"
 	"sync"
 	"sync/atomic"
@@ -34,7 +33,7 @@ func hidAcquire() (hidRef, error) {
 		panic("hidapi: hidCount >= math.MaxInt")
 	}
 	if hidCount == 0 {
-		err := hidInitRaw()
+		err := hidInit()
 		if err != nil {
 			return hidRef{}, err
 		}
@@ -55,25 +54,9 @@ func (ref *hidRef) Close() error {
 	}
 	hidCount--
 	if hidCount == 0 {
-		_ = hidExitRaw()
+		_ = hidExit()
 	}
 
-	return nil
-}
-
-func hidInitRaw() error {
-	ret := C.hid_init()
-	if ret != 0 {
-		return hidError(nil)
-	}
-	return nil
-}
-
-func hidExitRaw() error {
-	ret := C.hid_exit()
-	if ret != 0 {
-		return errors.New("hid_exit failed")
-	}
 	return nil
 }
 

@@ -4,3 +4,5 @@ package hidapi
 
 // #cgo pkg-config: hidapi-libusb
 import "C"
+
+const hidBackendInitThread = false
