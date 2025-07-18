@@ -57,7 +57,6 @@ type hidInitThread struct {
 }
 
 func (t *hidInitThread) run(reqCh <-chan *hidInitRequest) {
-	defer t.threadUnlock()
 	defer t.hidExit()
 
 	for req := range reqCh {
@@ -88,12 +87,6 @@ func (t *hidInitThread) hidInit() (err error) {
 	}
 
 	t.threadLock()
-	defer func() {
-		if err != nil {
-			t.threadUnlock()
-		}
-	}()
-
 	err = hidInitRaw()
 	t.state = err == nil
 	return
@@ -114,7 +107,6 @@ func (t *hidInitThread) hidExit() error {
 	}
 
 	t.state = false
-	t.threadUnlock()
 	return nil
 }
 
@@ -122,13 +114,6 @@ func (t *hidInitThread) threadLock() {
 	if !t.thread {
 		runtime.LockOSThread()
 		t.thread = true
-	}
-}
-
-func (t *hidInitThread) threadUnlock() {
-	if t.thread {
-		runtime.UnlockOSThread()
-		t.thread = false
 	}
 }
 
