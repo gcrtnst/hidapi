@@ -33,7 +33,7 @@ func hidAcquire() (hidRef, error) {
 		panic("hidapi: hidCount >= math.MaxInt")
 	}
 	if hidCount == 0 {
-		err := hidInit()
+		err := hidInitRaw()
 		if err != nil {
 			return hidRef{}, err
 		}
@@ -54,13 +54,13 @@ func (ref *hidRef) Close() error {
 	}
 	hidCount--
 	if hidCount == 0 {
-		_ = hidExit()
+		_ = hidExitRaw()
 	}
 
 	return nil
 }
 
-func hidInit() error {
+func hidInitRaw() error {
 	ret := C.hid_init()
 	if ret != 0 {
 		return hidError(nil)
@@ -68,7 +68,7 @@ func hidInit() error {
 	return nil
 }
 
-func hidExit() bool {
+func hidExitRaw() bool {
 	ret := C.hid_exit()
 	return ret == 0
 }
