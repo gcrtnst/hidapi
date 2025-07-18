@@ -28,8 +28,8 @@ type DeviceInfo struct {
 }
 
 func Enumerate(vendorID uint16, productID uint16) ([]DeviceInfo, error) {
-	hidMutex.Lock()
-	defer hidMutex.Unlock()
+	hidRefMu.Lock()
+	defer hidRefMu.Unlock()
 
 	ref, err := hidAcquire()
 	if err != nil {

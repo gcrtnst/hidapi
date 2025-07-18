@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	hidMutex sync.Mutex
-	hidCount = 0
+	hidRefMu  sync.Mutex
+	hidRefCnt = 0
 )
 
 type Error struct {
@@ -26,19 +26,19 @@ type hidRef struct {
 }
 
 func hidAcquire() (hidRef, error) {
-	if hidCount < 0 {
+	if hidRefCnt < 0 {
 		panic("hidapi: hidCount < 0")
 	}
-	if hidCount >= math.MaxInt {
+	if hidRefCnt >= math.MaxInt {
 		panic("hidapi: hidCount >= math.MaxInt")
 	}
-	if hidCount == 0 {
+	if hidRefCnt == 0 {
 		err := hidInit()
 		if err != nil {
 			return hidRef{}, err
 		}
 	}
-	hidCount++
+	hidRefCnt++
 
 	ref := hidRef{ok: 1}
 	return ref, nil
@@ -49,11 +49,11 @@ func (ref *hidRef) Close() error {
 		return nil
 	}
 
-	if hidCount <= 0 {
+	if hidRefCnt <= 0 {
 		panic("hidapi: hidCount <= 0")
 	}
-	hidCount--
-	if hidCount == 0 {
+	hidRefCnt--
+	if hidRefCnt == 0 {
 		_ = hidExit()
 	}
 
