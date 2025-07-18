@@ -3,6 +3,7 @@ package hidapi
 // #include <hidapi/hidapi.h>
 import "C"
 import (
+	"errors"
 	"math"
 	"sync"
 	"sync/atomic"
@@ -68,9 +69,12 @@ func hidInitRaw() error {
 	return nil
 }
 
-func hidExitRaw() bool {
+func hidExitRaw() error {
 	ret := C.hid_exit()
-	return ret == 0
+	if ret != 0 {
+		return errors.New("hid_exit failed")
+	}
+	return nil
 }
 
 func hidError(dev *Device) error {
